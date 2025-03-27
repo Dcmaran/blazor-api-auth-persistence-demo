@@ -10,21 +10,22 @@ namespace BlazorAuthAPI.Auth
 
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            ClaimsIdentity identity = new ClaimsIdentity();
+            ClaimsIdentity identity = new();
+
             if (_userState.IsAutenticated && _userState.Username != null)
             {
-                identity = new ClaimsIdentity(
-                [
-                new Claim(ClaimTypes.Name, _userState.Username),
-            ], "apiauth_type");
+                identity = new([new(ClaimTypes.Name, _userState.Username),], "apiauth_type");
             }
-            ClaimsPrincipal user = new ClaimsPrincipal(identity);
+
+            ClaimsPrincipal user = new(identity);
+
             return Task.FromResult(new AuthenticationState(user));
         }
 
         public void AuthenticateUser(string userName)
         {
             _userState.Username = userName;
+
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
     }
