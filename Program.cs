@@ -1,10 +1,15 @@
 using BlazorAuthAPI.Components;
+using BlazorAuthAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddControllers();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<UserState>();
 
 var app = builder.Build();
 
@@ -20,6 +25,11 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.UseAuthentication();  // Certifique-se de usar a autenticação antes da autorização
+app.UseAuthorization();
+
+app.MapControllers();  // Mapeia os controllers para serem acessados via rota
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
