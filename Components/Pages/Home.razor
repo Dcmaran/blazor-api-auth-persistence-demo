@@ -1,7 +1,42 @@
 ﻿@page "/"
+@inject HttpClient HttpClient
+@rendermode InteractiveServer
+@inject UserState UserState
 
-<PageTitle>Home</PageTitle>
+<h3>Authorization Test Page</h3>
 
-<h1>Hello, world!</h1>
+<button @onclick="SendMessage">Enviar</button>
 
-Welcome to your new app.
+<p>@responseMessage</p>
+
+@if (showWebView)
+{
+    <div style="display: flex; justify-content: center; margin-top: 20px;">
+        <iframe src="/authorized" width="800" height="600" style="border: 1px solid #ccc;"></iframe>
+    </div>
+}
+
+@code {
+    private string? responseMessage;
+    private bool showWebView = false;
+
+    private async Task SendMessage()
+    {
+        AuthRequest authRequest = new AuthRequest { Username = "admin", Password = "123456" };
+
+        Console.WriteLine(UserState.IsAuthenticated);
+
+        HttpResponseMessage response = await HttpClient.PostAsJsonAsync("https://localhost:7076/api/login", authRequest);
+
+        if (response.IsSuccessStatusCode)
+        {
+            responseMessage = await response.Content.ReadAsStringAsync();
+            showWebView = true; // Exibe a WebView
+        }
+        else
+        {
+            responseMessage = $"Erro: {response.StatusCode}";
+            showWebView = false;
+        }
+    }
+}

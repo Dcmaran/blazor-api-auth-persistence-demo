@@ -1,14 +1,29 @@
-﻿@page "/authorized"
+﻿@page "/authorized/{EncryptedData}"
+@using BlazorAuthAPI.Services
 
 @inject CustomAuthStateProvider AuthStateProvider
 @inject UserState UserState
+@inject CryptographyService CryptographyService
 
 @rendermode InteractiveServer
-@attribute [Authorize]
 
-<h3>Hello</h3>
+<div>
+	<AuthorizeView>
+		<Authorized>
+			<h1>You're authorized!</h1>
+		</Authorized>
+		<NotAuthorized>
+			<h1>You're not authorized!</h1>
+		</NotAuthorized>
+	</AuthorizeView>
+</div>
 
+@code {
+	[Parameter] 
+    public string EncryptedData { get; set; } = string.Empty;
 
-@code 
-{
+	protected override void OnInitialized()
+	{
+		var test = CryptographyService.Decrypt(EncryptedData);
+	}
 }

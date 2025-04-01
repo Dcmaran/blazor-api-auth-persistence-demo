@@ -1,15 +1,14 @@
-﻿using BlazorAuthAPI.Auth;
-using BlazorAuthAPI.Models;
+﻿using BlazorAuthAPI.Models;
+using BlazorAuthAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlazorAuthAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController(UserState userState, CustomAuthStateProvider customAuthStateProvider) : ControllerBase
+    [Route("api/")]
+    public class AuthController(CryptographyService cryptographyService) : ControllerBase
     {
-        private readonly UserState _userState = userState;
-        private readonly CustomAuthStateProvider _customAuthStateProvider = customAuthStateProvider;
+        readonly CryptographyService _cryptographyService = cryptographyService;
 
         [HttpPost("login")]
         public IActionResult PerformAction([FromBody] AuthRequest request)
@@ -21,15 +20,16 @@ namespace BlazorAuthAPI.Controllers
 
             if (IsUserValid(request))
             {
-                SetUserState(request.Username!);
-                _customAuthStateProvider.GetAuthenticationStateAsync().Wait();
-                _customAuthStateProvider.AuthenticateUser(request.Username!);
-                return Redirect("/authorized");
+                return Redirect($"/authorized/{_cryptographyService.Encrypt(new UserState()
+                {
+                    IsAuthenticated = true,
+                    Username = request.Username
+                        
+                })}");
             }
             else
             {
-                ClearUserState();
-                return Unauthorized(_userState);
+                return Unauthorized(request);
             }
         }
 
@@ -37,22 +37,7 @@ namespace BlazorAuthAPI.Controllers
         {
             return !string.IsNullOrWhiteSpace(request.Username) &&
                    !string.IsNullOrWhiteSpace(request.Password) &&
-                   request.Username == "admin" &&
-                   request.Password == "123456";
-        }
-
-        private void SetUserState(string username)
-        {
-            _userState.Username = username;
-            _userState.SessionID = Guid.NewGuid().ToString();
-            _userState.IsAutenticated = true;
-        }
-
-        private void ClearUserState()
-        {
-            _userState.Username = null;
-            _userState.SessionID = null;
-            _userState.IsAutenticated = false;
+                   request is { Username: "admin", Password: "123456" };
         }
     }
 }
