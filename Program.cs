@@ -3,8 +3,6 @@ using BlazorAuthAPI.Components;
 using BlazorAuthAPI.Models;
 using BlazorAuthAPI.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
