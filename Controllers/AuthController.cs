@@ -1,13 +1,15 @@
-﻿using BlazorAuthAPI.Models;
+﻿using BlazorAuthAPI.Auth;
+using BlazorAuthAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlazorAuthAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(UserState userState) : ControllerBase
+    public class AuthController(UserState userState, CustomAuthStateProvider customAuthStateProvider) : ControllerBase
     {
         private readonly UserState _userState = userState;
+        private readonly CustomAuthStateProvider _customAuthStateProvider = customAuthStateProvider;
 
         [HttpPost("login")]
         public IActionResult PerformAction([FromBody] AuthRequest request)
@@ -20,7 +22,9 @@ namespace BlazorAuthAPI.Controllers
             if (IsUserValid(request))
             {
                 SetUserState(request.Username!);
-                return Ok(_userState);
+                _customAuthStateProvider.GetAuthenticationStateAsync().Wait();
+                _customAuthStateProvider.AuthenticateUser(request.Username!);
+                return Redirect("/authorized");
             }
             else
             {

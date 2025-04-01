@@ -12,7 +12,7 @@ namespace BlazorAuthAPI.Auth
         {
             ClaimsIdentity identity = new();
 
-            if (_userState.IsAutenticated && _userState.Username != null)
+            if (_userState.IsAutenticated && _userState.Username is not null)
             {
                 identity = new([new(ClaimTypes.Name, _userState.Username),], "apiauth_type");
             }

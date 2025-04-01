@@ -1,5 +1,7 @@
+using BlazorAuthAPI.Auth;
 using BlazorAuthAPI.Components;
 using BlazorAuthAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,10 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<UserState>();
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationMiddlewareResultHandler>();
+builder.Services.AddAuthorization();
+
 
 var app = builder.Build();
 
