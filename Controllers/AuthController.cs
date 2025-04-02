@@ -23,6 +23,7 @@ namespace BlazorAuthAPI.Controllers
                 return Redirect($"/authorized/{_cryptographyService.Encrypt(new UserState()
                 {
                     IsAuthenticated = true,
+                    SessionToken = Guid.NewGuid().ToString(),
                     Username = request.Username
                         
                 })}");

@@ -4,28 +4,25 @@ using System.Security.Claims;
 
 namespace BlazorAuthAPI.Auth
 {
-    public class CustomAuthStateProvider(UserState userState) : AuthenticationStateProvider
+    public class CustomAuthStateProvider : AuthenticationStateProvider
     {
-        private readonly UserState _userState = userState;
+        private string? username;
 
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            ClaimsIdentity identity = new();
+            ClaimsIdentity identity = new (
+                [new Claim(ClaimTypes.Name, username ?? string.Empty)],
+                "apiauth_type"
+            );
 
-            if (_userState.IsAuthenticated && _userState.Username is not null)
-            {
-                identity = new([new(ClaimTypes.Name, _userState.Username),], "apiauth_type");
-            }
-
-            ClaimsPrincipal user = new(identity);
+            var user = new ClaimsPrincipal(identity);
 
             return Task.FromResult(new AuthenticationState(user));
         }
 
         public void AuthenticateUser(string userName)
         {
-            _userState.Username = userName;
-
+            username = userName;
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
     }

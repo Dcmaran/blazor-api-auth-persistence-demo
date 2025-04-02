@@ -5,7 +5,8 @@
 
 <h3>Authorization Test Page</h3>
 
-<button @onclick="SendMessage">Enviar</button>
+<button @onclick="SendValidLoginPost">Enviar Valid</button>
+<button @onclick="SendInvalidLoginPost">Enviar Invalid</button>
 
 <p>@responseMessage</p>
 
@@ -20,7 +21,7 @@
     private string? responseMessage;
     private bool showWebView = false;
 
-    private async Task SendMessage()
+    private async Task SendValidLoginPost()
     {
         AuthRequest authRequest = new AuthRequest { Username = "admin", Password = "123456" };
 
@@ -38,5 +39,25 @@
             responseMessage = $"Erro: {response.StatusCode}";
             showWebView = false;
         }
+    }
+
+    private async Task SendInvalidLoginPost()
+    {
+	    AuthRequest authRequest = new AuthRequest { Username = "admin", Password = "1234568" };
+
+	    Console.WriteLine(UserState.IsAuthenticated);
+
+	    HttpResponseMessage response = await HttpClient.PostAsJsonAsync("https://localhost:7076/api/login", authRequest);
+
+	    if (response.IsSuccessStatusCode)
+	    {
+		    responseMessage = await response.Content.ReadAsStringAsync();
+		    showWebView = true; // Exibe a WebView
+	    }
+	    else
+	    {
+		    responseMessage = $"Erro: {response.StatusCode}";
+		    showWebView = false;
+	    }
     }
 }
