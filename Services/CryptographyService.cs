@@ -39,7 +39,7 @@ namespace BlazorAuthAPI.Services
             return Base64UrlEncode(encryptedBytes);
         }
 
-        public UserState Decrypt(string encryptedString)
+        private UserState Decrypt(string encryptedString)
         {
             if (string.IsNullOrEmpty(encryptedString))
                 throw new ArgumentNullException(nameof(encryptedString));
@@ -88,5 +88,21 @@ namespace BlazorAuthAPI.Services
 
             return Convert.FromBase64String(base64);
         }
+
+        public bool TryDecrypt(string encryptedString, out UserState? userState)
+        {
+            userState = null;
+
+            try
+            {
+                userState = Decrypt(encryptedString);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
     }
 }

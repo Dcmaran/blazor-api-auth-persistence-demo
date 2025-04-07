@@ -1,0 +1,88 @@
+﻿@page "/"
+@inject HttpClient HttpClient
+@inject UserState UserState
+
+@rendermode InteractiveServer
+
+<h3>Authentication Test Page</h3>
+
+<div style="margin-bottom: 1rem;">
+    <button @onclick="SendValidAuthRequest">Send Valid Authentication (POST)</button>
+    <button @onclick="SendInvalidAuthRequest">Send Invalid Authentication (POST)</button>
+    <button @onclick="OpenInvalidUserStatePage">Open Invalid EncryptedUserState (GET)</button>
+</div>
+
+<p>@responseMessage</p>
+
+@if (showWebView && !string.IsNullOrWhiteSpace(authResultUrl))
+{
+    <div style="display: flex; justify-content: center; margin-top: 20px;">
+        <iframe src="@authResultUrl" width="800" height="600" style="border: 1px solid #ccc;"></iframe>
+    </div>
+}
+
+@code {
+    private string? responseMessage;
+    private bool showWebView = false;
+    private string? authResultUrl;
+
+    private async Task SendValidAuthRequest()
+    {
+        var request = new AuthRequest
+            {
+                Username = "admin",
+                Password = "123456"
+            };
+
+        await SendAuthenticationRequest(request);
+    }
+
+    private async Task SendInvalidAuthRequest()
+    {
+        var request = new AuthRequest
+            {
+                Username = "admin",
+                Password = "wrong-password"
+            };
+
+        await SendAuthenticationRequest(request);
+    }
+
+    private async Task SendAuthenticationRequest(AuthRequest request)
+    {
+        try
+        {
+            HttpResponseMessage response = await HttpClient.PostAsJsonAsync("https://localhost:7076/api/authenticate", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                authResultUrl = await response.Content.ReadAsStringAsync();
+                responseMessage = "Authentication succeeded. Opening WebView...";
+                showWebView = true;
+            }
+            else
+            {
+                responseMessage = $"Authentication failed: {response.StatusCode}";
+                showWebView = false;
+                authResultUrl = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            responseMessage = $"Error occurred: {ex.Message}";
+            showWebView = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private Task OpenInvalidUserStatePage()
+    {
+        authResultUrl = "https://localhost:7076/auth-callback/invalid-userstate";
+        responseMessage = "Opening invalid EncryptedUserState in WebView...";
+        showWebView = true;
+
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}

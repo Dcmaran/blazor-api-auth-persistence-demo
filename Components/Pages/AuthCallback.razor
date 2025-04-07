@@ -5,16 +5,14 @@
 
 @rendermode InteractiveServer
 
-<div>
-    <AuthorizeView>
-        <Authorized>
-            <h1>You're authorized!</h1>
-        </Authorized>
-        <NotAuthorized>
-            <h1>You're not authorized!</h1>
-        </NotAuthorized>
-    </AuthorizeView>
-</div>
+<AuthorizeView>
+    <Authorized>
+        <h1>You're authorized!</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1>You're not authorized!</h1>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     [Parameter]
@@ -26,9 +24,7 @@
     {
         if (!string.IsNullOrWhiteSpace(EncryptedUserState))
         {
-            _decryptedUserState = CryptographyService.Decrypt(EncryptedUserState);
-
-            if (_decryptedUserState.IsAuthenticated)
+            if (CryptographyService.TryDecrypt(EncryptedUserState, out _decryptedUserState) && _decryptedUserState?.IsAuthenticated is true)
             {
                 AuthStateProvider.AuthenticateUser(_decryptedUserState.Username!);
                 StateHasChanged();
