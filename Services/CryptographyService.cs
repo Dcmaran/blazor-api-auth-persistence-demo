@@ -7,19 +7,15 @@ namespace BlazorAuthAPI.Services
 {
     public class CryptographyService
     {
-        // Chave de 32 bytes para AES-256
         private readonly byte[] key = Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF");
 
-        // Vetor de inicialização (IV) de 16 bytes para AES
         private readonly byte[] iv = Encoding.UTF8.GetBytes("ABCDEF0123456789");
 
         public string Encrypt(UserState userState)
         {
-            if (userState == null)
-                throw new ArgumentNullException(nameof(userState));
+            ArgumentNullException.ThrowIfNull(userState);
 
-            // Serializa o objeto para JSON
-            var json = JsonSerializer.Serialize(userState);
+            string json = JsonSerializer.Serialize(userState);
             byte[] encryptedBytes;
 
             using (Aes aes = Aes.Create())
@@ -31,21 +27,19 @@ namespace BlazorAuthAPI.Services
 
                 ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
-                using (MemoryStream ms = new MemoryStream())
-                using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                using (StreamWriter sw = new StreamWriter(cs))
-                {
-                    sw.Write(json);
-                    sw.Flush();
-                    cs.FlushFinalBlock();
-                    encryptedBytes = ms.ToArray();
-                }
+                using MemoryStream ms = new();
+                using CryptoStream cs = new(ms, encryptor, CryptoStreamMode.Write);
+                using StreamWriter sw = new(cs);
+                sw.Write(json);
+                sw.Flush();
+                cs.FlushFinalBlock();
+                encryptedBytes = ms.ToArray();
             }
 
             return Base64UrlEncode(encryptedBytes);
         }
 
-        public UserState Decrypt(string encryptedString)
+        private UserState Decrypt(string encryptedString)
         {
             if (string.IsNullOrEmpty(encryptedString))
                 throw new ArgumentNullException(nameof(encryptedString));
@@ -71,7 +65,7 @@ namespace BlazorAuthAPI.Services
             return JsonSerializer.Deserialize<UserState>(json)!;
         }
 
-        private string Base64UrlEncode(byte[] input)
+        private static string Base64UrlEncode(byte[] input)
         {
             return Convert.ToBase64String(input)
                 .Replace("+", "-")
@@ -79,7 +73,7 @@ namespace BlazorAuthAPI.Services
                 .Replace("=", "");
         }
 
-        private byte[] Base64UrlDecode(string input)
+        private static byte[] Base64UrlDecode(string input)
         {
             string base64 = input
                 .Replace("-", "+")
@@ -94,5 +88,21 @@ namespace BlazorAuthAPI.Services
 
             return Convert.FromBase64String(base64);
         }
+
+        public bool TryDecrypt(string encryptedString, out UserState? userState)
+        {
+            userState = null;
+
+            try
+            {
+                userState = Decrypt(encryptedString);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
     }
 }

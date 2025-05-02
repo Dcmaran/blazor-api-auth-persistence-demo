@@ -1,0 +1,34 @@
+﻿@page "/auth-callback/{EncryptedUserState}"
+
+@inject CustomAuthStateProvider AuthStateProvider
+@inject CryptographyService CryptographyService
+
+@rendermode InteractiveServer
+
+<AuthorizeView>
+    <Authorized>
+        <h1>You're authorized!</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1>You're not authorized!</h1>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string EncryptedUserState { get; set; } = string.Empty;
+
+    private UserState? _decryptedUserState;
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrWhiteSpace(EncryptedUserState))
+        {
+            if (CryptographyService.TryDecrypt(EncryptedUserState, out _decryptedUserState) && _decryptedUserState?.IsAuthenticated is true)
+            {
+                AuthStateProvider.AuthenticateUser(_decryptedUserState.Username!);
+                StateHasChanged();
+            }
+        }
+    }
+}

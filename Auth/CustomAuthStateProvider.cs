@@ -1,5 +1,4 @@
-﻿using BlazorAuthAPI.Models;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 
 namespace BlazorAuthAPI.Auth
@@ -10,12 +9,17 @@ namespace BlazorAuthAPI.Auth
 
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            ClaimsIdentity identity = new (
-                [new Claim(ClaimTypes.Name, username ?? string.Empty)],
-                "apiauth_type"
-            );
+            ClaimsPrincipal user;
 
-            var user = new ClaimsPrincipal(identity);
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                user = new ClaimsPrincipal(new ClaimsIdentity());
+            }
+            else
+            {
+                ClaimsIdentity identity = new([new Claim(ClaimTypes.Name, username)], authenticationType: "apiauth_type");
+                user = new ClaimsPrincipal(identity);
+            }
 
             return Task.FromResult(new AuthenticationState(user));
         }

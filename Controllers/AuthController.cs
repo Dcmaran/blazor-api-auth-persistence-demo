@@ -10,17 +10,15 @@ namespace BlazorAuthAPI.Controllers
     {
         readonly CryptographyService _cryptographyService = cryptographyService;
 
-        [HttpPost("login")]
-        public IActionResult PerformAction([FromBody] AuthRequest request)
+        [HttpPost("authenticate")]
+        public IActionResult Authenticate([FromBody] AuthRequest request)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             if (IsUserValid(request))
             {
-                return Redirect($"/authorized/{_cryptographyService.Encrypt(new UserState()
+                return Ok($"/auth-callback/{_cryptographyService.Encrypt(new UserState()
                 {
                     IsAuthenticated = true,
                     SessionToken = Guid.NewGuid().ToString(),
