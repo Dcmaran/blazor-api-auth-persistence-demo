@@ -2,7 +2,6 @@ using BlazorAuthAPI.Auth;
 using BlazorAuthAPI.Components;
 using BlazorAuthAPI.Models;
 using BlazorAuthAPI.Services;
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -20,7 +19,6 @@ builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<CryptographyService>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationMiddlewareResultHandler>();
-builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 
@@ -44,10 +42,10 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.UseAuthentication();  // Certifique-se de usar a autenticação antes da autorização
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();  // Mapeia os controllers para serem acessados via rota
+app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
